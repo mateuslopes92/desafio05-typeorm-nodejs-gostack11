@@ -30,18 +30,20 @@ class CreateTransactionService {
       where: { title: category },
     });
 
-    const balance = await transactionsRepository.getBalance();
-
-    if (type === 'outcome' && balance.total < value) {
-      throw new AppError('You dont have balance');
-    }
-
     if (categoryExists) {
       categoryId = categoryExists.id;
     } else {
       newCategory = categoryRepository.create({ title: category });
       const { id } = await categoryRepository.save(newCategory);
       categoryId = id;
+    }
+
+    const balance = await transactionsRepository.getBalance();
+
+    if (balance) {
+      if (type === 'outcome' && balance.total < value) {
+        throw new AppError('You dont have balance');
+      }
     }
 
     const transaction = transactionsRepository.create({
